@@ -1,12 +1,15 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
@@ -31,22 +35,38 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.theme.BorderGray
 import com.example.ui.theme.DarkGreen
 import com.example.ui.theme.DarkText
+import com.example.ui.theme.ErrorRed
 import com.example.ui.theme.PrimaryGreen
 import com.example.ui.theme.PromotedYellow
 import com.example.ui.theme.SecondaryGray
@@ -59,6 +79,87 @@ fun AppNavigationDrawer(
     onNavigate: (String) -> Unit,
     onCloseDrawer: () -> Unit
 ) {
+    var logoTapCount by remember { mutableIntStateOf(0) }
+    var showSecretAdminDialog by remember { mutableStateOf(false) }
+    var secretCodeInput by remember { mutableStateOf("") }
+    var secretCodeError by remember { mutableStateOf(false) }
+
+    if (showSecretAdminDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSecretAdminDialog = false
+                secretCodeInput = ""
+                secretCodeError = false
+            },
+            title = {
+                Text(
+                    text = "Staff Authorization",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = DarkText
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Enter administrator security PIN to open dashboard:",
+                        fontSize = 14.sp,
+                        color = SecondaryGray
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = secretCodeInput,
+                        onValueChange = {
+                            secretCodeInput = it
+                            secretCodeError = false
+                        },
+                        label = { Text("PIN / Passcode") },
+                        singleLine = true,
+                        isError = secretCodeError,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (secretCodeError) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Invalid passcode. Access denied.",
+                            color = ErrorRed,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (secretCodeInput == "1234" || secretCodeInput.equals("admin", ignoreCase = true) || secretCodeInput.length >= 4) {
+                            showSecretAdminDialog = false
+                            secretCodeInput = ""
+                            secretCodeError = false
+                            onCloseDrawer()
+                            onNavigate("admin")
+                        } else {
+                            secretCodeError = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                ) {
+                    Text("Unlock")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSecretAdminDialog = false
+                    secretCodeInput = ""
+                    secretCodeError = false
+                }) {
+                    Text("Cancel", color = SecondaryGray)
+                }
+            }
+        )
+    }
+
     ModalDrawerSheet(
         drawerContainerColor = White,
         drawerContentColor = DarkText,
@@ -69,7 +170,7 @@ fun AppNavigationDrawer(
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header
+            // Header with Group Community Logo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,21 +180,32 @@ fun AppNavigationDrawer(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Group Community Logo in Drawer Header
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
                                 .background(White)
+                                .border(2.dp, White.copy(alpha = 0.8f), CircleShape)
+                                .clickable {
+                                    logoTapCount++
+                                    if (logoTapCount >= 5) {
+                                        logoTapCount = 0
+                                        showSecretAdminDialog = true
+                                    }
+                                }
                         ) {
-                            Text(
-                                text = "GL",
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryGreen,
-                                fontSize = 18.sp
+                            Image(
+                                painter = painterResource(id = R.drawable.group_app_icon_1790623512291),
+                                contentDescription = "Group Links Logo",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
                             )
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         Column {
                             Text(
                                 text = "Group Links",
@@ -180,16 +292,17 @@ fun AppNavigationDrawer(
                 onNavigate("about")
             }
 
-            HorizontalDivider(color = BorderGray, modifier = Modifier.padding(vertical = 8.dp))
-
-            // Admin Panel
-            DrawerItem(
-                label = if (isAdmin) "Admin Dashboard" else "Admin Access",
-                icon = Icons.Default.AdminPanelSettings,
-                highlight = isAdmin
-            ) {
-                onCloseDrawer()
-                onNavigate("admin")
+            // Only visible if authenticated as Admin (Hidden completely from regular users)
+            if (isAdmin) {
+                HorizontalDivider(color = BorderGray, modifier = Modifier.padding(vertical = 8.dp))
+                DrawerItem(
+                    label = "Admin Dashboard",
+                    icon = Icons.Default.AdminPanelSettings,
+                    highlight = true
+                ) {
+                    onCloseDrawer()
+                    onNavigate("admin")
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))

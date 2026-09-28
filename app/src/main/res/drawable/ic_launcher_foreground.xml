@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/ic_whatsapp_logo_1790574312104"
+        android:drawable="@drawable/group_app_icon_1790623512291"
         android:gravity="center" />
 </layer-list>
