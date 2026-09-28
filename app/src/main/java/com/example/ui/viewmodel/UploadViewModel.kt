@@ -142,34 +142,36 @@ class UploadViewModel : ViewModel() {
     }
 
     fun setLink(url: String) {
-        _link.value = url
-        checkDuplicateAndTriggerDetection(url)
+        val cleanUrl = LinkMetadataFetcher.extractCleanWhatsAppUrl(url) ?: url.trim()
+        _link.value = cleanUrl
+        checkDuplicateAndTriggerDetection(cleanUrl)
     }
 
     private fun checkDuplicateAndTriggerDetection(url: String) {
         val trimmed = url.trim()
         _autoDetectSuccessMessage.value = null
 
-        // 1. Strict Duplicate Check
-        if (trimmed.length > 15 && repository.isDuplicateLink(trimmed)) {
+        // 1. Strict Duplicate Check across query parameters & protocols
+        val normalized = LinkMetadataFetcher.normalizeLinkForDuplicateCheck(trimmed)
+        if (normalized.length > 10 && repository.isDuplicateLink(trimmed)) {
             _isDuplicate.value = true
-            _errorMessage.value = "This link has already been submitted."
+            _errorMessage.value = "Ye link already add ho chuka hai! Duplicate link allow nahi hai."
             return
         } else {
             _isDuplicate.value = false
-            if (_errorMessage.value == "This link has already been submitted.") {
+            if (_errorMessage.value?.contains("already") == true) {
                 _errorMessage.value = null
             }
         }
 
         // 2. Auto-Detect Metadata when URL is a valid WhatsApp group or channel link
-        val isGroupLink = trimmed.contains("chat.whatsapp.com/") && trimmed.length >= 26
-        val isChannelLink = trimmed.contains("whatsapp.com/channel/") && trimmed.length >= 30
+        val isGroupLink = trimmed.contains("chat.whatsapp.com/") && trimmed.length >= 22
+        val isChannelLink = trimmed.contains("whatsapp.com/channel/") && trimmed.length >= 25
 
         if (isGroupLink || isChannelLink) {
             detectionJob?.cancel()
             detectionJob = viewModelScope.launch {
-                delay(350) // Slight debounce for smooth typing/pasting
+                delay(300) // Debounce for smooth typing/pasting
                 _isDetecting.value = true
                 try {
                     val metadata = LinkMetadataFetcher.fetchMetadata(trimmed)
@@ -179,14 +181,20 @@ class UploadViewModel : ViewModel() {
                         }
                         if (!metadata.imageUrl.isNullOrBlank()) {
                             _imageUrl.value = metadata.imageUrl
+                        } else {
+                            // Assign category default image so logo is never empty
+                            _imageUrl.value = LinkMetadataFetcher.getDefaultImageForCategory(_selectedCategory.value, _selectedTab.value)
                         }
                         if (!metadata.description.isNullOrBlank() && _description.value.isBlank()) {
                             _description.value = metadata.description
                         }
-                        _autoDetectSuccessMessage.value = "Detected name & image from WhatsApp!"
+                        _autoDetectSuccessMessage.value = "Group name & logo auto-detected successfully!"
                     }
                 } catch (_: Exception) {
                     // Fail gracefully
+                    if (_imageUrl.value.isBlank()) {
+                        _imageUrl.value = LinkMetadataFetcher.getDefaultImageForCategory(_selectedCategory.value, _selectedTab.value)
+                    }
                 } finally {
                     _isDetecting.value = false
                 }
@@ -211,6 +219,10 @@ class UploadViewModel : ViewModel() {
 
     fun setCategory(category: String) {
         _selectedCategory.value = category
+        // Update default image if current image is empty or default
+        if (_imageUrl.value.isBlank() || _imageUrl.value.contains("unsplash.com")) {
+            _imageUrl.value = LinkMetadataFetcher.getDefaultImageForCategory(category, _selectedTab.value)
+        }
     }
 
     fun setImageUrl(url: String) {
@@ -240,7 +252,7 @@ class UploadViewModel : ViewModel() {
         _isSubmitting.value = false
         result.onSuccess {
             viewModelScope.launch {
-                _submissionSuccessEvent.emit("Submitted successfully! Your link will appear once reviewed by admin.")
+                _submissionSuccessEvent.emit("Group link successfully added! It is now live in the list.")
                 resetForm()
             }
         }.onFailure { e ->

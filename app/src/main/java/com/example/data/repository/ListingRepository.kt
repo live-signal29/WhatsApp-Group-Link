@@ -75,18 +75,18 @@ class ListingRepository(
 
     private fun loadInitialData() {
         val initialCategories = listOf(
-            CategoryItem("cat_1", "News", "newspaper", 128),
-            CategoryItem("cat_2", "Entertainment", "movie", 254),
-            CategoryItem("cat_3", "Funny", "sentiment_very_satisfied", 312),
-            CategoryItem("cat_4", "Poetry", "edit_note", 85),
-            CategoryItem("cat_5", "Videos", "play_circle", 192),
-            CategoryItem("cat_6", "Education", "school", 143),
-            CategoryItem("cat_7", "Sports", "sports_soccer", 167),
-            CategoryItem("cat_8", "Science", "science", 94),
-            CategoryItem("cat_9", "Friendship", "diversity_3", 420),
-            CategoryItem("cat_10", "Food", "restaurant", 115),
-            CategoryItem("cat_11", "Crypto", "currency_bitcoin", 230),
-            CategoryItem("cat_12", "Business", "business_center", 188)
+            CategoryItem("cat_1", "News", "newspaper", 92),
+            CategoryItem("cat_2", "Entertainment", "movie", 145),
+            CategoryItem("cat_3", "Funny", "sentiment_very_satisfied", 168),
+            CategoryItem("cat_4", "Poetry", "edit_note", 74),
+            CategoryItem("cat_5", "Videos", "play_circle", 112),
+            CategoryItem("cat_6", "Education", "school", 89),
+            CategoryItem("cat_7", "Sports", "sports_soccer", 104),
+            CategoryItem("cat_8", "Science", "science", 82),
+            CategoryItem("cat_9", "Friendship", "diversity_3", 195),
+            CategoryItem("cat_10", "Food", "restaurant", 68),
+            CategoryItem("cat_11", "Crypto", "currency_bitcoin", 136),
+            CategoryItem("cat_12", "Business", "business_center", 118)
         )
         _categories.value = initialCategories
 
@@ -94,113 +94,772 @@ class ListingRepository(
         val threeDaysMs = 3 * 24 * 60 * 60 * 1000L
 
         val initialListings = listOf(
-            // Promoted Groups
+            // ==========================================
+            // 1. NEWS (Groups & Channels)
+            // ==========================================
             ListingItem(
-                id = "list_1",
-                ownerId = "owner_1",
-                name = "Crypto Signal & Trading 🚀",
-                description = "Daily profitable crypto calls, Bitcoin analysis, and spot gem signals.",
-                imageUrl = "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?w=150",
-                whatsappLink = "https://chat.whatsapp.com/sampleCryptoVipGroup",
-                category = "Crypto",
+                id = "list_news_1",
+                ownerId = "owner_news_1",
+                name = "Global Breaking News 24/7 📰",
+                description = "Real-time international headlines, politics, weather, and breaking updates from verified sources.",
+                imageUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteNewsGlobal247",
+                category = "News",
                 type = ListingType.GROUP,
                 status = ListingStatus.APPROVED,
-                views = 4290,
+                views = 12450,
                 isPromoted = true,
                 promotionStart = now - 3600000L,
                 promotionEnd = now + threeDaysMs,
                 createdAt = now - 7200000L
             ),
             ListingItem(
-                id = "list_2",
-                ownerId = "owner_2",
-                name = "Funny Memes & Viral Reels 🎭",
-                description = "Laugh out loud every hour! Top hilarious comedy memes and status clips.",
-                imageUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-                whatsappLink = "https://chat.whatsapp.com/sampleMemeLoversClub",
-                category = "Funny",
-                type = ListingType.GROUP,
-                status = ListingStatus.APPROVED,
-                views = 2090,
-                isPromoted = true,
-                promotionStart = now - 1800000L,
-                promotionEnd = now + threeDaysMs,
-                createdAt = now - 3600000L
-            ),
-            ListingItem(
-                id = "list_3",
-                ownerId = "owner_3",
-                name = "Global Breaking News 24/7 📰",
-                description = "Real-time international headlines, politics, weather, and breaking updates.",
-                imageUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150",
-                whatsappLink = "https://chat.whatsapp.com/sampleWorldNewsAlerts",
+                id = "list_news_2",
+                ownerId = "owner_news_2",
+                name = "Daily Hindi & Urdu Headlines 🗞️",
+                description = "Subah ki taaza khabrein, desh-videsh ki mukhy samachar aur viral public updates.",
+                imageUrl = "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteDailyHindiSamachar",
                 category = "News",
                 type = ListingType.GROUP,
                 status = ListingStatus.APPROVED,
-                views = 6450,
+                views = 8920,
                 isPromoted = false,
-                createdAt = now - 86400000L
+                createdAt = now - 14400000L
             ),
             ListingItem(
-                id = "list_4",
-                ownerId = "owner_4",
-                name = "E-Commerce & Startup Founders 💼",
-                description = "Networking club for entrepreneurs, dropshippers, and small business owners.",
-                imageUrl = "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=150",
-                whatsappLink = "https://chat.whatsapp.com/sampleBusinessMastery",
-                category = "Business",
-                type = ListingType.GROUP,
-                status = ListingStatus.APPROVED,
-                views = 1240,
-                isPromoted = false,
-                createdAt = now - 172800000L
-            ),
-            // Promoted Channels
-            ListingItem(
-                id = "list_chan_1",
-                ownerId = "owner_5",
-                name = "Tech Gadgets & AI Daily ⚡",
-                description = "Official channel for latest mobile reviews, artificial intelligence, and software tools.",
-                imageUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=150",
-                whatsappLink = "https://whatsapp.com/channel/sampleTechUpdates001",
-                category = "Science",
+                id = "list_news_chan_1",
+                ownerId = "owner_news_3",
+                name = "World Geopolitics & Defense News 🌐",
+                description = "Official channel for deep analysis of military, economy, and foreign affairs.",
+                imageUrl = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaWorldGeopolitics",
+                category = "News",
                 type = ListingType.CHANNEL,
                 status = ListingStatus.APPROVED,
-                views = 10450,
+                views = 15300,
                 isPromoted = true,
-                promotionStart = now - 5000000L,
+                promotionStart = now - 1200000L,
                 promotionEnd = now + threeDaysMs,
-                createdAt = now - 10000000L
+                createdAt = now - 36000000L
             ),
             ListingItem(
-                id = "list_chan_2",
-                ownerId = "owner_6",
+                id = "list_news_chan_2",
+                ownerId = "owner_news_4",
+                name = "Live Weather Radar & City Alerts ⚡",
+                description = "Storm tracking, monsoon rainfall forecasts, temperature alerts, and climate bulletins.",
+                imageUrl = "https://images.unsplash.com/photo-1592210454359-9043f067919b?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaWeatherRadarAlerts",
+                category = "News",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 6400,
+                isPromoted = false,
+                createdAt = now - 48000000L
+            ),
+
+            // ==========================================
+            // 2. ENTERTAINMENT
+            // ==========================================
+            ListingItem(
+                id = "list_ent_1",
+                ownerId = "owner_ent_1",
+                name = "Bollywood & Hollywood Mania 🌟",
+                description = "First-day box office collections, upcoming teaser trailers, and celebrity interviews.",
+                imageUrl = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteCinemaManiaHub",
+                category = "Entertainment",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 11200,
+                isPromoted = true,
+                promotionStart = now - 2000000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 5000000L
+            ),
+            ListingItem(
+                id = "list_ent_2",
+                ownerId = "owner_ent_2",
+                name = "OTT Web Series & Netflix Binge 🍿",
+                description = "Best binge-worthy series recommendations, IMDb top ratings, and hidden indie film gems.",
+                imageUrl = "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteOttSeriesDiscussion",
+                category = "Entertainment",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 9400,
+                isPromoted = false,
+                createdAt = now - 22000000L
+            ),
+            ListingItem(
+                id = "list_ent_chan_1",
+                ownerId = "owner_ent_3",
                 name = "Movie Trailers & Cinema Hub 🎬",
-                description = "Hollywood and Bollywood HD trailers, Netflix releases, and cinema gossip.",
-                imageUrl = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=150",
-                whatsappLink = "https://whatsapp.com/channel/sampleCinemaTrailers",
+                description = "Hollywood and Bollywood HD trailers, release dates, and theatrical posters.",
+                imageUrl = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaCinemaTrailersHub",
                 category = "Entertainment",
                 type = ListingType.CHANNEL,
                 status = ListingStatus.APPROVED,
-                views = 8900,
+                views = 28900,
                 isPromoted = true,
-                promotionStart = now - 2500000L,
+                promotionStart = now - 1800000L,
                 promotionEnd = now + threeDaysMs,
-                createdAt = now - 4000000L
+                createdAt = now - 40000000L
             ),
             ListingItem(
-                id = "list_chan_3",
-                ownerId = "owner_7",
+                id = "list_ent_chan_2",
+                ownerId = "owner_ent_4",
+                name = "Celebrity Gossips & Red Carpet 📸",
+                description = "Daily glamorous photoshoot updates, airport looks, and spicy industry buzz.",
+                imageUrl = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaCelebrityGossipLive",
+                category = "Entertainment",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 14200,
+                isPromoted = false,
+                createdAt = now - 52000000L
+            ),
+
+            // ==========================================
+            // 3. FUNNY & COMEDY
+            // ==========================================
+            ListingItem(
+                id = "list_funny_1",
+                ownerId = "owner_funny_1",
+                name = "Funny Memes & Viral Reels 🎭",
+                description = "Laugh out loud every hour! Top hilarious comedy memes, relatable reels, and clips.",
+                imageUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteViralComedyMemes",
+                category = "Funny",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 19400,
+                isPromoted = true,
+                promotionStart = now - 1500000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 8000000L
+            ),
+            ListingItem(
+                id = "list_funny_2",
+                ownerId = "owner_funny_2",
+                name = "Non-Stop Jokes & Chutkule 😂",
+                description = "Majedaar Hindi jokes, savage comeback lines, aur family-friendly comedy jokes.",
+                imageUrl = "https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteDesiChutkuleHub",
+                category = "Funny",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 7800,
+                isPromoted = false,
+                createdAt = now - 19000000L
+            ),
+            ListingItem(
+                id = "list_funny_chan_1",
+                ownerId = "owner_funny_3",
+                name = "Desi Bakchodi & Memers Hub 🤪",
+                description = "Daily dose of relatable engineering, college, and trending desi memes.",
+                imageUrl = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaDesiMemersChannel",
+                category = "Funny",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 34500,
+                isPromoted = true,
+                promotionStart = now - 900000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 28000000L
+            ),
+            ListingItem(
+                id = "list_funny_chan_2",
+                ownerId = "owner_funny_4",
+                name = "Funny Animals & Cute Pets 🐾",
+                description = "Hilarious dogs, cats doing funny tricks, and wholesome pet videos.",
+                imageUrl = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaFunnyPetsWorld",
+                category = "Funny",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 12100,
+                isPromoted = false,
+                createdAt = now - 44000000L
+            ),
+
+            // ==========================================
+            // 4. POETRY & SHAYARI
+            // ==========================================
+            ListingItem(
+                id = "list_poetry_1",
+                ownerId = "owner_poet_1",
+                name = "Urdu Shayari & Ghazal Lovers 📜",
+                description = "Mirza Ghalib, Faiz, Jaun Elia, aur modern heart-touching sher-o-shayari collection.",
+                imageUrl = "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteUrduShayariLovers",
+                category = "Poetry",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 8400,
+                isPromoted = true,
+                promotionStart = now - 3000000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 12000000L
+            ),
+            ListingItem(
+                id = "list_poetry_2",
+                ownerId = "owner_poet_2",
+                name = "Hindi Kavita & Sahitya Sangam ✍️",
+                description = "Kavi sammelan, prem kavita, prerak panktiyan aur sahitya premion ka mulyavan manch.",
+                imageUrl = "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteHindiKavitaSangam",
+                category = "Poetry",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 5600,
+                isPromoted = false,
+                createdAt = now - 25000000L
+            ),
+            ListingItem(
+                id = "list_poetry_chan_1",
+                ownerId = "owner_poet_3",
+                name = "Deep Romantic & Sad Quotes 💔",
+                description = "Aesthetic written quotes for WhatsApp status, late night thoughts, and feelings.",
+                imageUrl = "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaRomanticQuotesOfficial",
+                category = "Poetry",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 18900,
+                isPromoted = true,
+                promotionStart = now - 400000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 31000000L
+            ),
+            ListingItem(
+                id = "list_poetry_chan_2",
+                ownerId = "owner_poet_4",
+                name = "Sufi Wisdom & Rumi Lines 🕊️",
+                description = "Spiritual sufi quotes, Rumi, Shams Tabrizi, and peaceful life reflections.",
+                imageUrl = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaSufiWisdomRumi",
+                category = "Poetry",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 11400,
+                isPromoted = false,
+                createdAt = now - 60000000L
+            ),
+
+            // ==========================================
+            // 5. VIDEOS & REELS
+            // ==========================================
+            ListingItem(
+                id = "list_vid_1",
+                ownerId = "owner_vid_1",
+                name = "Trending 4K WhatsApp Status 📱",
+                description = "Full screen HD status videos, sad lyrical clips, love songs, and trending BGM.",
+                imageUrl = "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteTrendingStatus4K",
+                category = "Videos",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 16700,
+                isPromoted = true,
+                promotionStart = now - 2200000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 6000000L
+            ),
+            ListingItem(
+                id = "list_vid_2",
+                ownerId = "owner_vid_2",
+                name = "Nature & Drone Cinematics 4K 🌲",
+                description = "Relaxing aerial videos, mountain waterfalls, sunsets, and ambient nature sounds.",
+                imageUrl = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteNatureDroneClips",
+                category = "Videos",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 7200,
+                isPromoted = false,
+                createdAt = now - 18000000L
+            ),
+            ListingItem(
+                id = "list_vid_chan_1",
+                ownerId = "owner_vid_3",
+                name = "Viral Shorts & TikTok Edits 🎥",
+                description = "Daily viral compilations, crazy stunts, magic tricks, and life hacks video feed.",
+                imageUrl = "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaViralShortsDaily",
+                category = "Videos",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 31200,
+                isPromoted = true,
+                promotionStart = now - 800000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 27000000L
+            ),
+            ListingItem(
+                id = "list_vid_chan_2",
+                ownerId = "owner_vid_4",
+                name = "CapCut & Video Editing Hub ✂️",
+                description = "Free CapCut templates, Premiere Pro presets, sound effects, and transitions.",
+                imageUrl = "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaCapCutTemplatesHub",
+                category = "Videos",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 14300,
+                isPromoted = false,
+                createdAt = now - 50000000L
+            ),
+
+            // ==========================================
+            // 6. EDUCATION
+            // ==========================================
+            ListingItem(
+                id = "list_edu_1",
+                ownerId = "owner_edu_1",
+                name = "Daily Current Affairs & General Knowledge 📚",
+                description = "UPSC, SSC, Railway, aur banking exams ke liye best hand-written notes aur quizzes.",
+                imageUrl = "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteDailyGkCurrentAffairs",
+                category = "Education",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 15600,
+                isPromoted = true,
+                promotionStart = now - 2400000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 7500000L
+            ),
+            ListingItem(
+                id = "list_edu_2",
+                ownerId = "owner_edu_2",
+                name = "Fluent English Speaking Club 🗣️",
+                description = "Daily vocabulary words, grammar rules, idioms, and voice room speaking practice.",
+                imageUrl = "https://images.unsplash.com/photo-1544717305-2782549b5136?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteEnglishSpeakingClub",
+                category = "Education",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 10800,
+                isPromoted = false,
+                createdAt = now - 16000000L
+            ),
+            ListingItem(
+                id = "list_edu_chan_1",
+                ownerId = "owner_edu_3",
+                name = "Python & Web Developers Code 💻",
+                description = "Learn Python, JavaScript, React, AI prompts, and free certified course links.",
+                imageUrl = "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaPythonDevsOfficial",
+                category = "Education",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 27400,
+                isPromoted = true,
+                promotionStart = now - 1100000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 35000000L
+            ),
+            ListingItem(
+                id = "list_edu_chan_2",
+                ownerId = "owner_edu_4",
+                name = "Govt Job Alerts & Notifications 📢",
+                description = "Instant notifications for Central, State government recruitment exams and admit cards.",
+                imageUrl = "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaGovtJobAlertsInstant",
+                category = "Education",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 21500,
+                isPromoted = false,
+                createdAt = now - 55000000L
+            ),
+
+            // ==========================================
+            // 7. SPORTS
+            // ==========================================
+            ListingItem(
+                id = "list_sports_1",
+                ownerId = "owner_sport_1",
+                name = "Cricket Mania & Live IPL Updates 🏏",
+                description = "Ball-by-ball scores, playing XI predictions, toss news, and match highlights.",
+                imageUrl = "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteCricketManiaLive",
+                category = "Sports",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 18700,
+                isPromoted = true,
+                promotionStart = now - 1900000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 6200000L
+            ),
+            ListingItem(
+                id = "list_sports_2",
+                ownerId = "owner_sport_2",
+                name = "Gym Motivation & Fitness Diet 💪",
+                description = "Bodybuilding workout routines, high-protein vegetarian/non-veg diet plans.",
+                imageUrl = "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteGymFitnessMotivation",
+                category = "Sports",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 9300,
+                isPromoted = false,
+                createdAt = now - 21000000L
+            ),
+            ListingItem(
+                id = "list_sports_chan_1",
+                ownerId = "owner_sport_3",
                 name = "Football & Premier League Live ⚽",
-                description = "Match scores, live commentary, transfer rumors, and matchday highlights.",
-                imageUrl = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150",
-                whatsappLink = "https://whatsapp.com/channel/sampleFootballScoreUpdates",
+                description = "Champions League, transfer market breaking news, Fabrizio Romano alerts, and tables.",
+                imageUrl = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaFootballPremierLive",
                 category = "Sports",
                 type = ListingType.CHANNEL,
                 status = ListingStatus.APPROVED,
-                views = 3120,
+                views = 32800,
+                isPromoted = true,
+                promotionStart = now - 600000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 38000000L
+            ),
+            ListingItem(
+                id = "list_sports_chan_2",
+                ownerId = "owner_sport_4",
+                name = "UFC & Boxing Fight Night 🥊",
+                description = "UFC pay-per-view fight schedules, knockout highlights, weigh-in videos, and press conferences.",
+                imageUrl = "https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaUfcCombatSportsLive",
+                category = "Sports",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 12900,
                 isPromoted = false,
-                createdAt = now - 250000000L
+                createdAt = now - 58000000L
+            ),
+
+            // ==========================================
+            // 8. SCIENCE & TECH
+            // ==========================================
+            ListingItem(
+                id = "list_sci_1",
+                ownerId = "owner_sci_1",
+                name = "NASA, Space & Astronomy Club 🌌",
+                description = "James Webb telescope images, black hole discoveries, SpaceX rocket launches, and celestial events.",
+                imageUrl = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteSpaceAstronomyClub",
+                category = "Science",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 11900,
+                isPromoted = true,
+                promotionStart = now - 2700000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 8500000L
+            ),
+            ListingItem(
+                id = "list_sci_2",
+                ownerId = "owner_sci_2",
+                name = "Mobile Android Tricks & Hidden Hacks 📱",
+                description = "Battery saving tips, developer options hacks, secret dial codes, and customized APKs.",
+                imageUrl = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteAndroidTricksHacks",
+                category = "Science",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 8600,
+                isPromoted = false,
+                createdAt = now - 23000000L
+            ),
+            ListingItem(
+                id = "list_sci_chan_1",
+                ownerId = "owner_sci_3",
+                name = "Tech Gadgets & AI Daily ⚡",
+                description = "Official channel for smartphone leaks, ChatGPT/Gemini prompts, GPUs, and tech discounts.",
+                imageUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaTechGadgetsAiDaily",
+                category = "Science",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 41200,
+                isPromoted = true,
+                promotionStart = now - 1400000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 42000000L
+            ),
+            ListingItem(
+                id = "list_sci_chan_2",
+                ownerId = "owner_sci_4",
+                name = "Future Science & Robotics 🤖",
+                description = "Humanoid robots, quantum computing, renewable energy breakthroughs, and biotech.",
+                imageUrl = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaRoboticsFutureTech",
+                category = "Science",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 15700,
+                isPromoted = false,
+                createdAt = now - 62000000L
+            ),
+
+            // ==========================================
+            // 9. FRIENDSHIP & COMMUNITY
+            // ==========================================
+            ListingItem(
+                id = "list_fri_1",
+                ownerId = "owner_fri_1",
+                name = "Chill Friends Worldwide Adda ☕",
+                description = "Friendly talk, voice chats, weekend gaming, sharing music playlists, and making genuine friends.",
+                imageUrl = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteChillFriendsWorldwide",
+                category = "Friendship",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 23400,
+                isPromoted = true,
+                promotionStart = now - 3200000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 9000000L
+            ),
+            ListingItem(
+                id = "list_fri_2",
+                ownerId = "owner_fri_2",
+                name = "Late Night Talks & Musings 🌙",
+                description = "A safe cozy space for late night thinkers, poetry recitals, calm talk, and peaceful music.",
+                imageUrl = "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteLateNightTalksClub",
+                category = "Friendship",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 12600,
+                isPromoted = false,
+                createdAt = now - 18000000L
+            ),
+            ListingItem(
+                id = "list_fri_chan_1",
+                ownerId = "owner_fri_3",
+                name = "Daily Positive Vibes & Affirmations ✨",
+                description = "Morning motivation, mental peace tips, self-love affirmations, and calming quotes.",
+                imageUrl = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaPositiveVibesDaily",
+                category = "Friendship",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 29500,
+                isPromoted = true,
+                promotionStart = now - 1700000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 33000000L
+            ),
+            ListingItem(
+                id = "list_fri_chan_2",
+                ownerId = "owner_fri_4",
+                name = "Gamers & Discord Community 🎮",
+                description = "BGMI, Free Fire, Valorant, GTA 5 squads, tournament dates, and gaming clips.",
+                imageUrl = "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaGamersCommunitySquad",
+                category = "Friendship",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 18200,
+                isPromoted = false,
+                createdAt = now - 54000000L
+            ),
+
+            // ==========================================
+            // 10. FOOD & COOKING
+            // ==========================================
+            ListingItem(
+                id = "list_food_1",
+                ownerId = "owner_food_1",
+                name = "Street Food Lovers & Zaika 🥘",
+                description = "Famous street food joints, roadside hidden dhabas, reviews, and spicy biryani recipes.",
+                imageUrl = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteStreetFoodZaikaClub",
+                category = "Food",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 11400,
+                isPromoted = true,
+                promotionStart = now - 2100000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 8100000L
+            ),
+            ListingItem(
+                id = "list_food_2",
+                ownerId = "owner_food_2",
+                name = "Baking, Cakes & Desserts 🍰",
+                description = "Oven-free cake recipes, chocolates, cookies, pastries, and masterchef decorating tips.",
+                imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteBakingCakesMastery",
+                category = "Food",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 7600,
+                isPromoted = false,
+                createdAt = now - 20000000L
+            ),
+            ListingItem(
+                id = "list_food_chan_1",
+                ownerId = "owner_food_3",
+                name = "Quick 10-Minute Recipe Hacks 🍳",
+                description = "Easy breakfast ideas, instant snacks, bachelor cooking tricks, and lunchbox recipes.",
+                imageUrl = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaQuickRecipeHacks",
+                category = "Food",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 24100,
+                isPromoted = true,
+                promotionStart = now - 1300000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 36000000L
+            ),
+            ListingItem(
+                id = "list_food_chan_2",
+                ownerId = "owner_food_4",
+                name = "Desi Shahi Pakwan & Biryani 🍲",
+                description = "Royal Mughlai recipes, authentic spices, Hyderabadi dum biryani, and korma guides.",
+                imageUrl = "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaDesiShahiPakwan",
+                category = "Food",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 13800,
+                isPromoted = false,
+                createdAt = now - 59000000L
+            ),
+
+            // ==========================================
+            // 11. CRYPTO & FOREX
+            // ==========================================
+            ListingItem(
+                id = "list_crypto_1",
+                ownerId = "owner_cryp_1",
+                name = "Crypto Signal & Trading 🚀",
+                description = "Daily profitable crypto calls, Bitcoin analysis, spot gem signals, and risk management.",
+                imageUrl = "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteCryptoVipTradingSignals",
+                category = "Crypto",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 19800,
+                isPromoted = true,
+                promotionStart = now - 3500000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 7200000L
+            ),
+            ListingItem(
+                id = "list_crypto_2",
+                ownerId = "owner_cryp_2",
+                name = "Forex & Stock Market Bull 📈",
+                description = "EUR/USD, Gold XAUUSD charts, technical indicators, and price action trade setups.",
+                imageUrl = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteForexStockMarketBull",
+                category = "Crypto",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 10400,
+                isPromoted = false,
+                createdAt = now - 17000000L
+            ),
+            ListingItem(
+                id = "list_crypto_chan_1",
+                ownerId = "owner_cryp_3",
+                name = "Bitcoin & Altcoin 100x Gems 💎",
+                description = "Early token launches, Binance listing alerts, airdrop guides, and on-chain whale tracking.",
+                imageUrl = "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaBitcoinGemCallsOfficial",
+                category = "Crypto",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 38900,
+                isPromoted = true,
+                promotionStart = now - 750000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 41000000L
+            ),
+            ListingItem(
+                id = "list_crypto_chan_2",
+                ownerId = "owner_cryp_4",
+                name = "Airdrop Hunters & Free Testnets 🪂",
+                description = "Claim zero-investment potential airdrops, testnet task walk-throughs, and faucet links.",
+                imageUrl = "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaAirdropHuntersCrypto",
+                category = "Crypto",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 17600,
+                isPromoted = false,
+                createdAt = now - 63000000L
+            ),
+
+            // ==========================================
+            // 12. BUSINESS & STARTUPS
+            // ==========================================
+            ListingItem(
+                id = "list_biz_1",
+                ownerId = "owner_biz_1",
+                name = "E-Commerce & Startup Founders 💼",
+                description = "Networking club for entrepreneurs, dropshippers, Amazon sellers, and small business owners.",
+                imageUrl = "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteStartupFoundersClub",
+                category = "Business",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 14300,
+                isPromoted = true,
+                promotionStart = now - 2800000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 8800000L
+            ),
+            ListingItem(
+                id = "list_biz_2",
+                ownerId = "owner_biz_2",
+                name = "Import Export & B2B Wholesale 🌐",
+                description = "Direct factory manufacturers, bulk wholesale supplies, customs clearance guidance.",
+                imageUrl = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://chat.whatsapp.com/inviteImportExportWholesale",
+                category = "Business",
+                type = ListingType.GROUP,
+                status = ListingStatus.APPROVED,
+                views = 8900,
+                isPromoted = false,
+                createdAt = now - 24000000L
+            ),
+            ListingItem(
+                id = "list_biz_chan_1",
+                ownerId = "owner_biz_3",
+                name = "Digital Marketing & Freelance Clients 💰",
+                description = "High-ticket client acquisition, SEO hacks, Meta Ads blueprint, and remote freelance jobs.",
+                imageUrl = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaDigitalMarketingAgency",
+                category = "Business",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 31500,
+                isPromoted = true,
+                promotionStart = now - 950000L,
+                promotionEnd = now + threeDaysMs,
+                createdAt = now - 37000000L
+            ),
+            ListingItem(
+                id = "list_biz_chan_2",
+                ownerId = "owner_biz_4",
+                name = "Real Estate & Commercial Deals 🏢",
+                description = "Verified residential plots, commercial investment properties, rental yields, and legal docs.",
+                imageUrl = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=160&auto=format&fit=crop&q=80",
+                whatsappLink = "https://whatsapp.com/channel/0029VaRealEstateDealsClub",
+                category = "Business",
+                type = ListingType.CHANNEL,
+                status = ListingStatus.APPROVED,
+                views = 15200,
+                isPromoted = false,
+                createdAt = now - 65000000L
             )
         )
         _listings.value = initialListings
@@ -297,12 +956,13 @@ class ListingRepository(
         }
     }
 
-    // Check duplicate link
+    // Check duplicate link using normalized WhatsApp URL
     fun isDuplicateLink(link: String): Boolean {
-        val normalized = link.trim().lowercase(Locale.ROOT).trimEnd('/')
+        val normalized = com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(link)
+        if (normalized.length < 5) return false
         return _listings.value.any {
             it.status != ListingStatus.DELETED &&
-                    it.whatsappLink.trim().lowercase(Locale.ROOT).trimEnd('/') == normalized
+                    com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink) == normalized
         }
     }
 
@@ -397,7 +1057,7 @@ class ListingRepository(
         imageUrl: String
     ): Result<ListingItem> {
         if (isDuplicateLink(whatsappLink)) {
-            return Result.failure(Exception("This link has already been submitted."))
+            return Result.failure(Exception("Ye link already add ho chuka hai! Duplicate link allow nahi hai."))
         }
         if (containsBlockedKeywords(name) || containsBlockedKeywords(description)) {
             return Result.failure(Exception("Content violates policy terms and contains restricted keywords."))
@@ -405,22 +1065,32 @@ class ListingRepository(
 
         val id = "list_" + UUID.randomUUID().toString().take(10)
         val ownerId = authRepository.getCurrentUserId()
+        val cleanUrl = com.example.utils.LinkMetadataFetcher.extractCleanWhatsAppUrl(whatsappLink) ?: whatsappLink.trim()
+        val fallbackImg = com.example.utils.LinkMetadataFetcher.getDefaultImageForCategory(category, type)
+        val resolvedImg = if (imageUrl.isNotBlank()) imageUrl else fallbackImg
+
         val newListing = ListingItem(
             id = id,
             ownerId = ownerId,
             name = name.trim(),
-            description = description.trim(),
-            imageUrl = imageUrl.ifBlank { "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150" },
-            whatsappLink = whatsappLink.trim(),
+            description = description.trim().ifBlank { "Join our active WhatsApp community!" },
+            imageUrl = resolvedImg,
+            whatsappLink = cleanUrl,
             category = category,
             type = type,
-            status = ListingStatus.PENDING,
-            views = 0,
+            status = ListingStatus.APPROVED, // Immediately approved and displayed in list!
+            views = 1,
             isPromoted = false,
             createdAt = System.currentTimeMillis()
         )
 
+        // Prepend to top of listings so user sees their new group immediately
         _listings.value = listOf(newListing) + _listings.value
+
+        // Increment the category's counter
+        _categories.value = _categories.value.map {
+            if (it.name.equals(category, ignoreCase = true)) it.copy(groupCount = it.groupCount + 1) else it
+        }
 
         firestore?.collection("listings")?.document(id)?.set(newListing.toMap())
             ?.addOnFailureListener { Log.w("ListingRepo", "Failed to sync to Firestore: ${it.message}") }

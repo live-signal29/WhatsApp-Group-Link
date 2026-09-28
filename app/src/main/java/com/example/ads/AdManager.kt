@@ -257,7 +257,34 @@ fun AdBannerView(
                 AdView(context).apply {
                     setAdSize(AdSize.BANNER)
                     adUnitId = AdConfig.BANNER_AD_UNIT_ID
+
+                    // Prevent Mesa renderer crash when DRM rendernode is unavailable in emulator
+                    val isEmulator = android.os.Build.FINGERPRINT.startsWith("generic") ||
+                            android.os.Build.MODEL.contains("google_sdk") ||
+                            android.os.Build.HARDWARE.contains("goldfish") ||
+                            android.os.Build.HARDWARE.contains("ranchu")
+                    if (isEmulator) {
+                        setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+                    }
+
+                    adListener = object : com.google.android.gms.ads.AdListener() {
+                        override fun onAdLoaded() {
+                            Log.d("AdBannerView", "Banner ad loaded successfully")
+                        }
+
+                        override fun onAdFailedToLoad(error: LoadAdError) {
+                            Log.w("AdBannerView", "Banner ad failed to load: ${error.message}")
+                        }
+                    }
+
                     loadAd(AdRequest.Builder().build())
+                }
+            },
+            onRelease = { adView ->
+                try {
+                    adView.destroy()
+                } catch (e: Exception) {
+                    Log.w("AdBannerView", "Error destroying adView: ${e.message}")
                 }
             }
         )

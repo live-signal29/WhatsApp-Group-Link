@@ -172,6 +172,8 @@ fun GroupLinksApp() {
                             onNavigateToHistory = { currentScreen = "history" },
                             onOpenDrawer = { coroutineScope.launch { drawerState.open() } },
                             onSuccessNavigateHome = {
+                                homeViewModel.selectCategory(null)
+                                homeViewModel.setSearchQuery("")
                                 currentBottomTab = BottomNavDestination.HOME
                                 currentScreen = "home"
                             }
