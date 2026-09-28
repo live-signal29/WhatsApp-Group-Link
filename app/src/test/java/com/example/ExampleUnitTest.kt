@@ -52,4 +52,26 @@ class ExampleUnitTest {
         val validChannel = "https://whatsapp.com/channel/sampleChannelCode12345"
         assertTrue(validChannel.startsWith("https://whatsapp.com/channel/"))
     }
+
+    @Test
+    fun `unescapeHtml decodes hex emojis and strips zero width spaces`() {
+        val input = "&#x200b;&#x1f680; AI_Live Signals"
+        val output = com.example.utils.LinkMetadataFetcher.unescapeHtml(input)
+        assertEquals("🚀 AI_Live Signals", output)
+    }
+
+    @Test
+    fun `detectLinkType correctly classifies channels and groups`() {
+        val channelUrl = "https://whatsapp.com/channel/0029VbDdoVK1XquNdab6wV0P"
+        val groupUrl = "https://chat.whatsapp.com/ABCxyz12345"
+
+        assertEquals(ListingType.CHANNEL, com.example.utils.LinkMetadataFetcher.detectLinkType(channelUrl))
+        assertEquals(ListingType.GROUP, com.example.utils.LinkMetadataFetcher.detectLinkType(groupUrl))
+    }
+
+    @Test
+    fun `suggestCategory matches financial and trading signals`() {
+        val cat = com.example.utils.LinkMetadataFetcher.suggestCategory("🚀 AI_Live Signals")
+        assertEquals("Crypto", cat)
+    }
 }

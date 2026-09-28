@@ -12,7 +12,9 @@ import java.util.regex.Pattern
 data class DetectedMetadata(
     val title: String?,
     val description: String?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val detectedType: ListingType? = null,
+    val suggestedCategory: String? = null
 )
 
 object LinkMetadataFetcher {
@@ -44,20 +46,36 @@ object LinkMetadataFetcher {
     private val GROUP_URL_REGEX = Pattern.compile("(https?://)?chat\\.whatsapp\\.com/([A-Za-z0-9_-]+)", Pattern.CASE_INSENSITIVE)
     private val CHANNEL_URL_REGEX = Pattern.compile("(https?://)?(www\\.)?whatsapp\\.com/channel/([A-Za-z0-9_-]+)", Pattern.CASE_INSENSITIVE)
 
+    // Regex for HTML Character References (Hex: &#x1f680; and Decimal: &#128640;)
+    private val HEX_ENTITY_PATTERN = Pattern.compile("&#x([0-9a-fA-F]+);?", Pattern.CASE_INSENSITIVE)
+    private val DEC_ENTITY_PATTERN = Pattern.compile("&#([0-9]+);?")
+
+    /**
+     * Determines whether a WhatsApp link is a Group or Channel.
+     */
+    fun detectLinkType(url: String): ListingType? {
+        val trimmed = url.trim().lowercase()
+        return when {
+            trimmed.contains("whatsapp.com/channel/") -> ListingType.CHANNEL
+            trimmed.contains("chat.whatsapp.com/") -> ListingType.GROUP
+            else -> null
+        }
+    }
+
     /**
      * Extracts a clean, normalized WhatsApp URL even if user pasted full share text.
      */
     fun extractCleanWhatsAppUrl(input: String): String? {
         val trimmed = input.trim()
-        val groupMatcher = GROUP_URL_REGEX.matcher(trimmed)
-        if (groupMatcher.find()) {
-            val code = groupMatcher.group(2)
-            return "https://chat.whatsapp.com/$code"
-        }
         val channelMatcher = CHANNEL_URL_REGEX.matcher(trimmed)
         if (channelMatcher.find()) {
             val code = channelMatcher.group(3)
             return "https://whatsapp.com/channel/$code"
+        }
+        val groupMatcher = GROUP_URL_REGEX.matcher(trimmed)
+        if (groupMatcher.find()) {
+            val code = groupMatcher.group(2)
+            return "https://chat.whatsapp.com/$code"
         }
         return null
     }
@@ -80,11 +98,10 @@ object LinkMetadataFetcher {
 
     /**
      * Fetches WhatsApp Group or Channel OpenGraph metadata from the URL.
-     * Tries Facebook OpenGraph crawler User-Agent first (which WhatsApp serves pure static OG HTML to),
-     * then falls back to WhatsApp client UA if needed.
      */
     suspend fun fetchMetadata(url: String): DetectedMetadata? = withContext(Dispatchers.IO) {
         val targetUrl = extractCleanWhatsAppUrl(url) ?: if (!url.startsWith("http://") && !url.startsWith("https://")) "https://${url.trim()}" else url.trim()
+        val detectedType = detectLinkType(targetUrl)
 
         val crawlerAgents = listOf(
             "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
@@ -109,31 +126,33 @@ object LinkMetadataFetcher {
                     val html = response.body?.string() ?: return@use
                     if (html.isBlank()) return@use
 
-                    var rawTitle = extractPattern(html, OG_TITLE_P1)
+                    val rawTitle = extractPattern(html, OG_TITLE_P1)
                         ?: extractPattern(html, OG_TITLE_P2)
                         ?: extractPattern(html, TWITTER_TITLE)
                         ?: extractPattern(html, H3_GROUP_NAME)
                         ?: extractPattern(html, TITLE_TAG_PATTERN)
 
-                    var rawImage = extractPattern(html, OG_IMAGE_P1)
+                    val rawImage = extractPattern(html, OG_IMAGE_P1)
                         ?: extractPattern(html, OG_IMAGE_P2)
                         ?: extractPattern(html, TWITTER_IMAGE)
                         ?: extractPattern(html, WHATSAPP_CDN_IMG)
 
-                    var rawDesc = extractPattern(html, OG_DESC_P1)
+                    val rawDesc = extractPattern(html, OG_DESC_P1)
                         ?: extractPattern(html, OG_DESC_P2)
 
                     val cleanTitle = cleanWhatsAppTitle(rawTitle, targetUrl)
                     val cleanImage = cleanImageUrl(rawImage)
                     val cleanDesc = rawDesc?.let { unescapeHtml(it) }
 
-                    // If we obtained a valid title, return immediately
                     if (!cleanTitle.isNullOrBlank()) {
-                        Log.d(TAG, "Successfully detected: title='$cleanTitle', image='$cleanImage'")
+                        val suggestedCat = suggestCategory(cleanTitle, cleanDesc)
+                        Log.d(TAG, "Successfully detected: title='$cleanTitle', image='$cleanImage', type=$detectedType, cat=$suggestedCat")
                         return@withContext DetectedMetadata(
                             title = cleanTitle,
                             description = cleanDesc,
-                            imageUrl = cleanImage
+                            imageUrl = cleanImage,
+                            detectedType = detectedType,
+                            suggestedCategory = suggestedCat
                         )
                     }
                 }
@@ -143,7 +162,11 @@ object LinkMetadataFetcher {
         }
 
         // Fallback if network blocked or invite code private
-        extractFallbackFromUrl(targetUrl)
+        val fallback = extractFallbackFromUrl(targetUrl)
+        fallback?.copy(
+            detectedType = detectedType,
+            suggestedCategory = fallback.title?.let { suggestCategory(it, fallback.description) }
+        )
     }
 
     private fun extractPattern(html: String, pattern: Pattern): String? {
@@ -157,37 +180,103 @@ object LinkMetadataFetcher {
     private fun cleanImageUrl(raw: String?): String? {
         if (raw.isNullOrBlank()) return null
         val unescaped = unescapeHtml(raw)
-        // Check if valid URL
         if (unescaped.startsWith("http://") || unescaped.startsWith("https://")) {
             return unescaped
         }
         return null
     }
 
-    private fun unescapeHtml(text: String): String {
-        return text
+    /**
+     * Completely decodes named, decimal, and hex HTML entities (including emojis & unicode),
+     * and strips zero-width artifacts (&#x200b; etc).
+     */
+    fun unescapeHtml(text: String): String {
+        var result = text
             .replace("&amp;", "&")
             .replace("&quot;", "\"")
             .replace("&#39;", "'")
             .replace("&apos;", "'")
             .replace("&lt;", "<")
             .replace("&gt;", ">")
+            .replace("&nbsp;", " ")
+            .replace("&bull;", "•")
+            .replace("&ndash;", "–")
+            .replace("&mdash;", "—")
+            .replace("&hellip;", "…")
+
+        // 1. Decode Hex entities like &#x1f680; (🚀) or &#x200b; (zero-width space)
+        val hexMatcher = HEX_ENTITY_PATTERN.matcher(result)
+        val hexSb = StringBuffer()
+        while (hexMatcher.find()) {
+            val hex = hexMatcher.group(1) ?: ""
+            val replacement = try {
+                val codePoint = hex.toInt(16)
+                if (codePoint == 0x200B || codePoint == 0x200C || codePoint == 0x200D || codePoint == 0xFEFF || codePoint == 0x00A0) {
+                    "" // Strip zero-width space
+                } else if (Character.isValidCodePoint(codePoint)) {
+                    String(Character.toChars(codePoint))
+                } else {
+                    ""
+                }
+            } catch (_: Exception) {
+                hexMatcher.group(0) ?: ""
+            }
+            hexMatcher.appendReplacement(hexSb, java.util.regex.Matcher.quoteReplacement(replacement))
+        }
+        hexMatcher.appendTail(hexSb)
+        result = hexSb.toString()
+
+        // 2. Decode Decimal entities like &#128640; (🚀)
+        val decMatcher = DEC_ENTITY_PATTERN.matcher(result)
+        val decSb = StringBuffer()
+        while (decMatcher.find()) {
+            val dec = decMatcher.group(1) ?: ""
+            val replacement = try {
+                val codePoint = dec.toInt(10)
+                if (codePoint == 0x200B || codePoint == 0x200C || codePoint == 0x200D || codePoint == 0xFEFF || codePoint == 0x00A0) {
+                    ""
+                } else if (Character.isValidCodePoint(codePoint)) {
+                    String(Character.toChars(codePoint))
+                } else {
+                    ""
+                }
+            } catch (_: Exception) {
+                decMatcher.group(0) ?: ""
+            }
+            decMatcher.appendReplacement(decSb, java.util.regex.Matcher.quoteReplacement(replacement))
+        }
+        decMatcher.appendTail(decSb)
+        result = decSb.toString()
+
+        // 3. Strip any residual raw zero-width characters and tidy spaces
+        return result
+            .replace("\u200B", "")
+            .replace("\u200C", "")
+            .replace("\u200D", "")
+            .replace("\uFEFF", "")
             .trim()
     }
 
-    private fun cleanWhatsAppTitle(rawTitle: String?, url: String): String? {
+    /**
+     * Cleans titles by decoding entities, stripping WhatsApp suffixes, and normalizing.
+     */
+    fun cleanWhatsAppTitle(rawTitle: String?, url: String): String? {
         if (rawTitle.isNullOrBlank()) return extractFallbackFromUrl(url)?.title
 
         var unescaped = unescapeHtml(rawTitle)
 
-        // Remove trailing "• WhatsApp Channel" or "| WhatsApp" or "on WhatsApp"
+        // Remove trailing "• WhatsApp Channel", "| WhatsApp", "on WhatsApp", etc.
         unescaped = unescaped
             .replace(Regex("(?i)\\s*[•|\\-–]\\s*WhatsApp Channel.*"), "")
             .replace(Regex("(?i)\\s*[•|\\-–]\\s*WhatsApp Group.*"), "")
             .replace(Regex("(?i)\\s+on WhatsApp\\b.*"), "")
+            .replace(Regex("(?i)\\s*\\|\\s*WhatsApp\\b.*"), "")
+            .replace(Regex("(?i)^WhatsApp\\s*:\\s*"), "")
             .trim()
 
-        // If title is literally generic WhatsApp invite phrase, extract name from URL code
+        // Trim residual quotes or spaces
+        unescaped = unescaped.trim(' ', '"', '\'', '“', '”')
+
         val genericPhrases = listOf(
             "WhatsApp Group Invite",
             "WhatsApp Group",
@@ -208,22 +297,48 @@ object LinkMetadataFetcher {
 
     fun extractFallbackFromUrl(url: String): DetectedMetadata? {
         val trimmed = url.trim()
+        val isChannel = trimmed.contains("whatsapp.com/channel/")
         val code = when {
             trimmed.contains("chat.whatsapp.com/") -> trimmed.substringAfter("chat.whatsapp.com/").substringBefore("?").substringBefore("/")
-            trimmed.contains("whatsapp.com/channel/") -> trimmed.substringAfter("whatsapp.com/channel/").substringBefore("?").substringBefore("/")
+            isChannel -> trimmed.substringAfter("whatsapp.com/channel/").substringBefore("?").substringBefore("/")
             else -> null
         } ?: return null
 
         val sampleName = if (code.length > 4) {
             val prefix = code.take(7).replaceFirstChar { it.uppercase() }
-            "Group $prefix"
-        } else "WhatsApp Group"
+            if (isChannel) "Channel $prefix" else "Group $prefix"
+        } else {
+            if (isChannel) "WhatsApp Channel" else "WhatsApp Group"
+        }
 
         return DetectedMetadata(
             title = sampleName,
-            description = "Welcome to our WhatsApp community! Join us to connect.",
-            imageUrl = null
+            description = if (isChannel) "Follow our official WhatsApp Channel for daily updates!" else "Welcome to our WhatsApp community! Join us to connect.",
+            imageUrl = null,
+            detectedType = if (isChannel) ListingType.CHANNEL else ListingType.GROUP
         )
+    }
+
+    /**
+     * Smartly suggests an app category based on title and description keywords.
+     */
+    fun suggestCategory(title: String, desc: String? = null): String? {
+        val text = "$title ${desc ?: ""}".lowercase()
+        return when {
+            text.contains("signal") || text.contains("crypto") || text.contains("bitcoin") || text.contains("forex") || text.contains("trading") || text.contains("binance") || text.contains("airdrop") || text.contains("btc") -> "Crypto"
+            text.contains("startup") || text.contains("business") || text.contains("marketing") || text.contains("wholesale") || text.contains("e-commerce") || text.contains("dropship") || text.contains("earning") || text.contains("client") || text.contains("agency") -> "Business"
+            text.contains("news") || text.contains("samachar") || text.contains("khabar") || text.contains("headline") || text.contains("alert") || text.contains("weather") || text.contains("breaking") -> "News"
+            text.contains("meme") || text.contains("funny") || text.contains("joke") || text.contains("chutkule") || text.contains("bakchodi") || text.contains("laugh") || text.contains("comedy") -> "Funny"
+            text.contains("poetry") || text.contains("shayari") || text.contains("ghazal") || text.contains("kavita") || text.contains("quote") || text.contains("sad") || text.contains("romantic") -> "Poetry"
+            text.contains("status") || text.contains("video") || text.contains("reel") || text.contains("short") || text.contains("capcut") || text.contains("clip") -> "Videos"
+            text.contains("study") || text.contains("exam") || text.contains("gk") || text.contains("current affairs") || text.contains("upsc") || text.contains("ssc") || text.contains("job") || text.contains("python") || text.contains("code") || text.contains("english") || text.contains("education") -> "Education"
+            text.contains("cricket") || text.contains("ipl") || text.contains("football") || text.contains("gym") || text.contains("fitness") || text.contains("sport") || text.contains("workout") -> "Sports"
+            text.contains("tech") || text.contains("science") || text.contains("gadget") || text.contains("ai") || text.contains("android") || text.contains("space") || text.contains("nasa") || text.contains("robot") -> "Science"
+            text.contains("friend") || text.contains("dost") || text.contains("chat") || text.contains("adda") || text.contains("vibe") || text.contains("gaming") || text.contains("bgmi") -> "Friendship"
+            text.contains("food") || text.contains("recipe") || text.contains("cook") || text.contains("biryani") || text.contains("cake") || text.contains("bake") || text.contains("dish") || text.contains("zaika") -> "Food"
+            text.contains("movie") || text.contains("cinema") || text.contains("bollywood") || text.contains("hollywood") || text.contains("trailer") || text.contains("web series") || text.contains("netflix") || text.contains("song") -> "Entertainment"
+            else -> null
+        }
     }
 
     fun getDefaultImageForCategory(category: String, type: ListingType): String {

@@ -144,12 +144,28 @@ class UploadViewModel : ViewModel() {
     fun setLink(url: String) {
         val cleanUrl = LinkMetadataFetcher.extractCleanWhatsAppUrl(url) ?: url.trim()
         _link.value = cleanUrl
+
+        // Auto-switch tab based on WhatsApp URL type (Group vs Channel)
+        val detectedType = LinkMetadataFetcher.detectLinkType(cleanUrl)
+        if (detectedType != null && _selectedTab.value != detectedType) {
+            _selectedTab.value = detectedType
+            if (_imageUrl.value.isBlank() || _imageUrl.value.contains("unsplash.com")) {
+                _imageUrl.value = LinkMetadataFetcher.getDefaultImageForCategory(_selectedCategory.value, detectedType)
+            }
+        }
+
         checkDuplicateAndTriggerDetection(cleanUrl)
     }
 
     private fun checkDuplicateAndTriggerDetection(url: String) {
         val trimmed = url.trim()
         _autoDetectSuccessMessage.value = null
+
+        // Auto-switch tab if detected
+        val detectedType = LinkMetadataFetcher.detectLinkType(trimmed)
+        if (detectedType != null && _selectedTab.value != detectedType) {
+            _selectedTab.value = detectedType
+        }
 
         // 1. Strict Duplicate Check across query parameters & protocols
         val normalized = LinkMetadataFetcher.normalizeLinkForDuplicateCheck(trimmed)
@@ -176,6 +192,9 @@ class UploadViewModel : ViewModel() {
                 try {
                     val metadata = LinkMetadataFetcher.fetchMetadata(trimmed)
                     if (metadata != null) {
+                        if (metadata.detectedType != null) {
+                            _selectedTab.value = metadata.detectedType
+                        }
                         if (!metadata.title.isNullOrBlank()) {
                             _name.value = metadata.title
                         }
@@ -188,7 +207,11 @@ class UploadViewModel : ViewModel() {
                         if (!metadata.description.isNullOrBlank() && _description.value.isBlank()) {
                             _description.value = metadata.description
                         }
-                        _autoDetectSuccessMessage.value = "Group name & logo auto-detected successfully!"
+                        if (!metadata.suggestedCategory.isNullOrBlank()) {
+                            _selectedCategory.value = metadata.suggestedCategory
+                        }
+                        val typeLabel = if (_selectedTab.value == ListingType.CHANNEL) "WhatsApp Channel" else "WhatsApp Group"
+                        _autoDetectSuccessMessage.value = "$typeLabel detected! Name & logo fetched successfully."
                     }
                 } catch (_: Exception) {
                     // Fail gracefully
@@ -209,12 +232,12 @@ class UploadViewModel : ViewModel() {
     }
 
     fun setName(text: String) {
-        _name.value = text
+        _name.value = LinkMetadataFetcher.unescapeHtml(text)
         _errorMessage.value = null
     }
 
     fun setDescription(text: String) {
-        _description.value = text
+        _description.value = LinkMetadataFetcher.unescapeHtml(text)
     }
 
     fun setCategory(category: String) {

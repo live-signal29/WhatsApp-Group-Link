@@ -162,7 +162,8 @@ fun UploadScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             // Link Input Field with Auto-Detection & Trailing Icon
-            val linkHint = if (selectedTab == ListingType.GROUP) "Paste Group link..." else "Paste Channel link..."
+            val linkHint = if (selectedTab == ListingType.GROUP) "Paste WhatsApp Group link..." else "Paste WhatsApp Channel link..."
+            val detectingHint = if (selectedTab == ListingType.CHANNEL) "Auto-detecting channel name, logo and info..." else "Auto-detecting group name, logo and info..."
 
             OutlinedTextField(
                 value = link,
@@ -216,7 +217,7 @@ fun UploadScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Auto-detecting group name, image and info...",
+                        text = detectingHint,
                         fontSize = 12.sp,
                         color = PrimaryGreen,
                         fontWeight = FontWeight.Medium
