@@ -184,10 +184,10 @@ fun AppNavigationDrawer(
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(54.dp)
                                 .clip(CircleShape)
                                 .background(White)
-                                .border(2.dp, White.copy(alpha = 0.8f), CircleShape)
+                                .border(2.dp, White.copy(alpha = 0.9f), CircleShape)
                                 .clickable {
                                     logoTapCount++
                                     if (logoTapCount >= 5) {
@@ -197,7 +197,7 @@ fun AppNavigationDrawer(
                                 }
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.group_app_icon_1790623512291),
+                                painter = painterResource(id = R.drawable.group_user_uploaded_icon),
                                 contentDescription = "Group Links Logo",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

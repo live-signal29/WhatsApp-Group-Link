@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -119,7 +118,7 @@ fun HeaderBar(
                     }
                 }
             } else {
-                // Normal Header with Title & Action Icons
+                // Normal Header with Title & Action Icons (Clean, Professional - No logo on head)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -182,17 +181,19 @@ fun HeaderBar(
                         }
                     }
 
-                    // Hamburger Menu Icon
+                    // Hamburger Menu (Three Lines) - Professionally sized & aligned
                     if (showMenu) {
                         IconButton(
                             onClick = onMenuClick,
-                            modifier = Modifier.size(38.dp)
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(2.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Menu",
                                 tint = White,
-                                modifier = Modifier.size(22.dp)
+                                modifier = Modifier.size(25.dp)
                             )
                         }
                     }
