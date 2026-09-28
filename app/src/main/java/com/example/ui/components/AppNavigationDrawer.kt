@@ -180,14 +180,14 @@ fun AppNavigationDrawer(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Group Community Logo in Drawer Header
+                        // Social Group Community Logo in Drawer Header (Compact & Neatly Adjusted)
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(54.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(White)
-                                .border(2.dp, White.copy(alpha = 0.9f), CircleShape)
+                                .border(1.5.dp, White.copy(alpha = 0.9f), CircleShape)
                                 .clickable {
                                     logoTapCount++
                                     if (logoTapCount >= 5) {
@@ -197,7 +197,7 @@ fun AppNavigationDrawer(
                                 }
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.group_user_uploaded_icon),
+                                painter = painterResource(id = R.drawable.group_social_icon),
                                 contentDescription = "Group Links Logo",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -205,7 +205,7 @@ fun AppNavigationDrawer(
                                     .clip(CircleShape)
                             )
                         }
-                        Spacer(modifier = Modifier.width(14.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
                                 text = "Group Links",
