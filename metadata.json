@@ -1,0 +1,6 @@
+{
+  "name": "WhatsApp Group Links",
+  "description": "WhatsApp Group and Channel discovery and promotion platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.admin == true ||
+         request.auth.token.email == "admin@grouplinks.app" ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin");
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Public Listings
+    match /listings/{listingId} {
+      // Anyone can read approved listings; admins or owners can read any listing
+      allow read: if resource.data.status == "APPROVED" || isAdmin() || (isAuthenticated() && resource.data.ownerId == request.auth.uid);
+
+      // Authenticated users can submit pending listings
+      allow create: if isAuthenticated() &&
+        request.resource.data.status == "PENDING" &&
+        request.resource.data.isPromoted == false &&
+        request.resource.data.ownerId == request.auth.uid;
+
+      // Safe view count increment
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) &&
+        request.resource.data.views == resource.data.views + 1;
+
+      // Admins have full access to approve, reject, promote, or delete
+      allow update, delete: if isAdmin();
+    }
+
+    // Categories (Publicly readable, admin editable)
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // App Settings (Publicly readable, admin editable)
+    match /app_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Promotions
+    match /promotions/{promoId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.ownerId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    // Purchases
+    match /purchases/{purchaseId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    // Reports (Users can submit reports, only admin can view/manage)
+    match /reports/{reportId} {
+      allow create: if true;
+      allow read, delete: if isAdmin();
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+  }
+}
