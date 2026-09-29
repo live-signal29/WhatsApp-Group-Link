@@ -58,35 +58,38 @@ class ListingRepository(
     // Track listings viewed in this session to prevent spam incrementing
     private val sessionViewedListings = mutableSetOf<String>()
 
+    private val baseCatalogListings: List<ListingItem> by lazy {
+        ListingCatalogSeeder.generateFullCatalog()
+    }
+
     init {
+        // ALWAYS load base catalog with 30+ items per category immediately
+        loadInitialData()
+
         try {
             if (FirebaseApp.getApps(context).isNotEmpty()) {
                 firestore = FirebaseFirestore.getInstance()
                 listenToFirestore()
-            } else {
-                Log.d("ListingRepo", "Firebase not yet initialized. Loading seeded local data.")
-                loadInitialData()
             }
         } catch (e: Exception) {
             Log.w("ListingRepo", "Firestore init note: ${e.message}. Using offline catalog.")
-            loadInitialData()
         }
     }
 
     private fun loadInitialData() {
         val initialCategories = listOf(
-            CategoryItem("cat_1", "News", "newspaper", 92),
-            CategoryItem("cat_2", "Entertainment", "movie", 145),
-            CategoryItem("cat_3", "Funny", "sentiment_very_satisfied", 168),
-            CategoryItem("cat_4", "Poetry", "edit_note", 74),
-            CategoryItem("cat_5", "Videos", "play_circle", 112),
-            CategoryItem("cat_6", "Education", "school", 89),
-            CategoryItem("cat_7", "Sports", "sports_soccer", 104),
-            CategoryItem("cat_8", "Science", "science", 82),
-            CategoryItem("cat_9", "Friendship", "diversity_3", 195),
-            CategoryItem("cat_10", "Food", "restaurant", 68),
-            CategoryItem("cat_11", "Crypto", "currency_bitcoin", 136),
-            CategoryItem("cat_12", "Business", "business_center", 118)
+            CategoryItem("cat_1", "News", "newspaper", 32),
+            CategoryItem("cat_2", "Entertainment", "movie", 32),
+            CategoryItem("cat_3", "Funny", "sentiment_very_satisfied", 32),
+            CategoryItem("cat_4", "Poetry", "edit_note", 32),
+            CategoryItem("cat_5", "Videos", "play_circle", 32),
+            CategoryItem("cat_6", "Education", "school", 32),
+            CategoryItem("cat_7", "Sports", "sports_soccer", 32),
+            CategoryItem("cat_8", "Science", "science", 32),
+            CategoryItem("cat_9", "Friendship", "diversity_3", 32),
+            CategoryItem("cat_10", "Food", "restaurant", 32),
+            CategoryItem("cat_11", "Crypto", "currency_bitcoin", 32),
+            CategoryItem("cat_12", "Business", "business_center", 32)
         )
         _categories.value = initialCategories
 
@@ -862,7 +865,7 @@ class ListingRepository(
                 createdAt = now - 65000000L
             )
         )
-        _listings.value = initialListings
+        _listings.value = baseCatalogListings
     }
 
     private fun listenToFirestore() {
@@ -872,16 +875,25 @@ class ListingRepository(
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.w("ListingRepo", "Firestore error: ${error.message}")
-                    if (_listings.value.isEmpty()) loadInitialData()
                     return@addSnapshotListener
                 }
                 if (snapshot != null && !snapshot.isEmpty) {
-                    val items = snapshot.documents.mapNotNull { doc ->
+                    val remoteItems = snapshot.documents.mapNotNull { doc ->
                         doc.data?.let { ListingItem.fromMap(doc.id, it) }
                     }
-                    _listings.value = items
-                } else if (_listings.value.isEmpty()) {
-                    loadInitialData()
+                    if (remoteItems.isNotEmpty()) {
+                        val remoteIds = remoteItems.map { it.id }.toSet()
+                        val remoteLinks = remoteItems.map {
+                            com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink)
+                        }.toSet()
+
+                        // Preserve base catalog with 30+ items per category, merging remote additions on top!
+                        val preservedBase = baseCatalogListings.filter {
+                            it.id !in remoteIds &&
+                            com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink) !in remoteLinks
+                        }
+                        _listings.value = remoteItems + preservedBase
+                    }
                 }
             }
 
@@ -890,7 +902,9 @@ class ListingRepository(
                 val items = snapshot.documents.mapNotNull { doc ->
                     doc.data?.let { CategoryItem.fromMap(doc.id, it) }
                 }
-                _categories.value = items
+                if (items.isNotEmpty()) {
+                    _categories.value = items
+                }
             }
         }
     }
