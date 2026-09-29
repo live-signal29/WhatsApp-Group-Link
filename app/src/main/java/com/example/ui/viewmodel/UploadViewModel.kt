@@ -138,12 +138,14 @@ class UploadViewModel : ViewModel() {
     fun selectTab(tab: ListingType) {
         _selectedTab.value = tab
         _errorMessage.value = null
-        checkDuplicateAndTriggerDetection(_link.value)
+        triggerDetection(_link.value)
     }
 
     fun setLink(url: String) {
         val cleanUrl = LinkMetadataFetcher.extractCleanWhatsAppUrl(url) ?: url.trim()
         _link.value = cleanUrl
+        _isDuplicate.value = false
+        _errorMessage.value = null
 
         // Auto-switch tab based on WhatsApp URL type (Group vs Channel)
         val detectedType = LinkMetadataFetcher.detectLinkType(cleanUrl)
@@ -154,10 +156,11 @@ class UploadViewModel : ViewModel() {
             }
         }
 
-        checkDuplicateAndTriggerDetection(cleanUrl)
+        // Pick up link immediately and auto-detect metadata without premature duplicate blocking
+        triggerDetection(cleanUrl)
     }
 
-    private fun checkDuplicateAndTriggerDetection(url: String) {
+    private fun triggerDetection(url: String) {
         val trimmed = url.trim()
         _autoDetectSuccessMessage.value = null
 
@@ -167,20 +170,7 @@ class UploadViewModel : ViewModel() {
             _selectedTab.value = detectedType
         }
 
-        // 1. Strict Duplicate Check across query parameters & protocols
-        val normalized = LinkMetadataFetcher.normalizeLinkForDuplicateCheck(trimmed)
-        if (normalized.length > 10 && repository.isDuplicateLink(trimmed)) {
-            _isDuplicate.value = true
-            _errorMessage.value = "Ye link already add ho chuka hai! Duplicate link allow nahi hai."
-            return
-        } else {
-            _isDuplicate.value = false
-            if (_errorMessage.value?.contains("already") == true) {
-                _errorMessage.value = null
-            }
-        }
-
-        // 2. Auto-Detect Metadata when URL is a valid WhatsApp group or channel link
+        // Auto-Detect Metadata when URL is a valid WhatsApp group or channel link
         val isGroupLink = trimmed.contains("chat.whatsapp.com/") && trimmed.length >= 22
         val isChannelLink = trimmed.contains("whatsapp.com/channel/") && trimmed.length >= 25
 
@@ -226,8 +216,8 @@ class UploadViewModel : ViewModel() {
     }
 
     fun retryAutoDetect() {
-        if (_link.value.isNotBlank() && !_isDuplicate.value) {
-            checkDuplicateAndTriggerDetection(_link.value)
+        if (_link.value.isNotBlank()) {
+            triggerDetection(_link.value)
         }
     }
 
@@ -257,7 +247,7 @@ class UploadViewModel : ViewModel() {
     }
 
     fun publishFree() {
-        val validation = validateInputs()
+        val validation = validateInputsForFreePublish()
         if (!validation) return
 
         _isSubmitting.value = true
@@ -269,7 +259,8 @@ class UploadViewModel : ViewModel() {
             category = _selectedCategory.value,
             type = _selectedTab.value,
             whatsappLink = _link.value,
-            imageUrl = _imageUrl.value
+            imageUrl = _imageUrl.value,
+            allowDuplicate = false
         )
 
         _isSubmitting.value = false
@@ -280,18 +271,21 @@ class UploadViewModel : ViewModel() {
             }
         }.onFailure { e ->
             _errorMessage.value = e.message ?: "Failed to submit link"
+            if (e.message?.contains("already") == true) {
+                _isDuplicate.value = true
+            }
         }
     }
 
     fun promoteNow(activity: Activity) {
-        val validation = validateInputs()
+        val validation = validateBasicInputs()
         if (!validation) return
 
         _isSubmitting.value = true
         _errorMessage.value = null
 
-        // Submit listing record first (or find existing)
-        val submitResult = repository.submitFreeListing(
+        // Supports promoting new OR existing/already-published links multiple times
+        val submitResult = repository.getOrCreateListingForPromotion(
             name = _name.value,
             description = _description.value,
             category = _selectedCategory.value,
@@ -326,21 +320,33 @@ class UploadViewModel : ViewModel() {
         }
     }
 
-    private fun validateInputs(): Boolean {
-        if (_isDuplicate.value || repository.isDuplicateLink(_link.value)) {
+    private fun validateInputsForFreePublish(): Boolean {
+        if (!validateBasicInputs()) return false
+
+        // Check if link is duplicate - ONLY allow free publish ONCE!
+        if (repository.isDuplicateLink(_link.value)) {
             _isDuplicate.value = true
-            _errorMessage.value = "This link has already been submitted."
+            _errorMessage.value = "Ye link already publish ho chuka hai! Free publish sirf ek baar ho sakta hai. Agar aap isko dubara promote karna chahte hain to 'Promote Now' use karein."
             return false
         }
 
-        if (_name.value.trim().isEmpty()) {
-            _errorMessage.value = "Please enter a title/name for your ${selectedTab.value.name.lowercase()}."
+        return true
+    }
+
+    private fun validateBasicInputs(): Boolean {
+        if (_link.value.trim().isBlank()) {
+            _errorMessage.value = "Please enter a valid WhatsApp link."
             return false
         }
 
         val urlValidation = repository.validateWhatsAppLink(_link.value, _selectedTab.value)
         if (urlValidation is ValidationResult.Error) {
             _errorMessage.value = urlValidation.message
+            return false
+        }
+
+        if (_name.value.trim().isEmpty()) {
+            _errorMessage.value = "Please enter a title/name for your ${selectedTab.value.name.lowercase()}."
             return false
         }
 

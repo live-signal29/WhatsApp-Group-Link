@@ -28,6 +28,25 @@ class GroupLinksApplication : Application() {
 
         Log.d("GroupLinksApp", "Initializing Group Links Application")
 
+        // Initialize Firebase safely with fallback configuration
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
+                val appId = getString(R.string.google_app_id)
+                val projectId = getString(R.string.project_id)
+                val apiKey = getString(R.string.google_api_key)
+                val gcmSenderId = getString(R.string.gcm_defaultSenderId)
+                val options = com.google.firebase.FirebaseOptions.Builder()
+                    .setApplicationId(appId)
+                    .setProjectId(projectId)
+                    .setApiKey(apiKey)
+                    .setGcmSenderId(gcmSenderId)
+                    .build()
+                com.google.firebase.FirebaseApp.initializeApp(this, options)
+            }
+        } catch (e: Exception) {
+            Log.w("GroupLinksApp", "Firebase init note: ${e.message}")
+        }
+
         // Initialize local Room database
         database = AppDatabase.getDatabase(this)
 

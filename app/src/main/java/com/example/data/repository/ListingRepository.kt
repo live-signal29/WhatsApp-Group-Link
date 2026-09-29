@@ -1054,10 +1054,11 @@ class ListingRepository(
         category: String,
         type: ListingType,
         whatsappLink: String,
-        imageUrl: String
+        imageUrl: String,
+        allowDuplicate: Boolean = false
     ): Result<ListingItem> {
-        if (isDuplicateLink(whatsappLink)) {
-            return Result.failure(Exception("Ye link already add ho chuka hai! Duplicate link allow nahi hai."))
+        if (!allowDuplicate && isDuplicateLink(whatsappLink)) {
+            return Result.failure(Exception("Ye link already publish ho chuka hai! Free publish sirf ek baar ho sakta hai. Agar aap isko dubara promote karna chahte hain to 'Promote Now' use karein."))
         }
         if (containsBlockedKeywords(name) || containsBlockedKeywords(description)) {
             return Result.failure(Exception("Content violates policy terms and contains restricted keywords."))
@@ -1098,6 +1099,54 @@ class ListingRepository(
         return Result.success(newListing)
     }
 
+    // Supports promoting new OR already published links multiple times
+    fun getOrCreateListingForPromotion(
+        name: String,
+        description: String,
+        category: String,
+        type: ListingType,
+        whatsappLink: String,
+        imageUrl: String
+    ): Result<ListingItem> {
+        if (containsBlockedKeywords(name) || containsBlockedKeywords(description)) {
+            return Result.failure(Exception("Content violates policy terms and contains restricted keywords."))
+        }
+
+        val cleanUrl = com.example.utils.LinkMetadataFetcher.extractCleanWhatsAppUrl(whatsappLink) ?: whatsappLink.trim()
+        val normalized = com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(cleanUrl)
+
+        val existing = _listings.value.find {
+            it.status != ListingStatus.DELETED &&
+                    com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink) == normalized
+        }
+
+        if (existing != null) {
+            val fallbackImg = com.example.utils.LinkMetadataFetcher.getDefaultImageForCategory(category, type)
+            val resolvedImg = if (imageUrl.isNotBlank()) imageUrl else if (existing.imageUrl.isNotBlank()) existing.imageUrl else fallbackImg
+            val updated = existing.copy(
+                name = name.trim().ifBlank { existing.name },
+                description = description.trim().ifBlank { existing.description },
+                category = category,
+                type = type,
+                imageUrl = resolvedImg
+            )
+            _listings.value = _listings.value.map { if (it.id == existing.id) updated else it }
+            firestore?.collection("listings")?.document(existing.id)?.set(updated.toMap())
+                ?.addOnFailureListener { Log.w("ListingRepo", "Failed to sync to Firestore: ${it.message}") }
+            return Result.success(updated)
+        }
+
+        return submitFreeListing(
+            name = name,
+            description = description,
+            category = category,
+            type = type,
+            whatsappLink = whatsappLink,
+            imageUrl = imageUrl,
+            allowDuplicate = true
+        )
+    }
+
     fun activatePaidPromotion(
         listingId: String,
         purchaseToken: String,
@@ -1107,24 +1156,31 @@ class ListingRepository(
         val now = System.currentTimeMillis()
         val durationDays = _appSettings.value.promotionDurationDays
         val durationMs = durationDays * 24 * 60 * 60 * 1000L
-        val endTime = now + durationMs
         val ownerId = authRepository.getCurrentUserId()
 
-        // 1. Update listing
         val existing = _listings.value.find { it.id == listingId }
         val listingName = existing?.name ?: "Promotion Campaign"
-
-        val updatedList = _listings.value.map {
-            if (it.id == listingId) {
-                it.copy(
-                    isPromoted = true,
-                    promotionStart = now,
-                    promotionEnd = endTime,
-                    status = ListingStatus.APPROVED // Promoted listing automatically approved
-                )
-            } else it
+        val baseStart = if (existing?.isPromoted == true && (existing.promotionEnd ?: 0L) > now) {
+            existing.promotionEnd ?: now
+        } else {
+            now
         }
-        _listings.value = updatedList
+        val endTime = baseStart + durationMs
+        val promoStart = if (existing?.isPromoted == true && (existing.promotionEnd ?: 0L) > now) {
+            existing.promotionStart ?: now
+        } else {
+            now
+        }
+
+        val targetListing = existing?.copy(
+            isPromoted = true,
+            promotionStart = promoStart,
+            promotionEnd = endTime,
+            status = ListingStatus.APPROVED // Promoted listing automatically approved
+        )
+        if (targetListing != null) {
+            _listings.value = listOf(targetListing) + _listings.value.filter { it.id != listingId }
+        }
 
         // 2. Record promotion
         val promoRecord = PromotionRecord(

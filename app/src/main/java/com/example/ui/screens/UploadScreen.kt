@@ -249,7 +249,7 @@ fun UploadScreen(
                 }
             }
 
-            // Duplicate link warning
+            // Duplicate link warning (Shown only when attempting free publish on an already published link)
             AnimatedVisibility(visible = isDuplicate) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -257,22 +257,30 @@ fun UploadScreen(
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(ErrorRed.copy(alpha = 0.1f))
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                        .background(Color(0xFFFFF3CD))
+                        .border(1.dp, Color(0xFFFFEEBA), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = "Duplicate Warning",
-                        tint = ErrorRed,
-                        modifier = Modifier.size(16.dp)
+                        tint = Color(0xFF856404),
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "This link has already been submitted and cannot be added again.",
-                        fontSize = 12.sp,
-                        color = ErrorRed,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "Ye link already publish ho chuka hai!",
+                            fontSize = 12.sp,
+                            color = Color(0xFF856404),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Free publish sirf 1 baar ho sakta hai. Is link ko dubara feature/boost karne ke liye 'Promote Now' use karein.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF856404)
+                        )
+                    }
                 }
             }
 
@@ -441,7 +449,7 @@ fun UploadScreen(
                                 viewModel.promoteNow(activity)
                             }
                         },
-                        enabled = !isSubmitting && !isDuplicate,
+                        enabled = !isSubmitting && link.isNotBlank(),
                         shape = RoundedCornerShape(26.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = ButtonGreen,
@@ -491,12 +499,12 @@ fun UploadScreen(
             ) {
                 TextButton(
                     onClick = { viewModel.publishFree() },
-                    enabled = !isSubmitting && !isDuplicate,
+                    enabled = !isSubmitting && link.isNotBlank(),
                     modifier = Modifier.testTag("button_publish_free")
                 ) {
                     Text(
                         text = "Publish Free (Slow)",
-                        color = if (isDuplicate) Color.Gray else PrimaryGreen,
+                        color = if (!isSubmitting && link.isNotBlank()) PrimaryGreen else Color.Gray,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )

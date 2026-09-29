@@ -23,4 +23,11 @@
     <string name="contact_support">Contact Support</string>
     <string name="about_app">About Group Links</string>
     <string name="admin_panel">Admin Panel</string>
+
+    <!-- Firebase configuration strings (satisfies FirebaseInitProvider & Analytics) -->
+    <string name="google_app_id" translatable="false">1:561123937797:android:com.aistudio.whatsappgrouplinks.pkrzla</string>
+    <string name="gcm_defaultSenderId" translatable="false">561123937797</string>
+    <string name="project_id" translatable="false">whatsapp-group-links-prod</string>
+    <string name="google_api_key" translatable="false">AIzaSyFallbackKeyForFirebaseClientApp</string>
+    <string name="default_web_client_id" translatable="false">561123937797.apps.googleusercontent.com</string>
 </resources>
