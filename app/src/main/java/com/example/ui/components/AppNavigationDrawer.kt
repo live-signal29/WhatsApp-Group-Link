@@ -180,11 +180,11 @@ fun AppNavigationDrawer(
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Social Group Community Logo in Drawer Header (Compact & Neatly Adjusted)
+                        // Authentic WhatsApp Group Icon in Drawer Header (Compact & Balanced)
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(38.dp)
                                 .clip(CircleShape)
                                 .background(White)
                                 .border(1.5.dp, White.copy(alpha = 0.9f), CircleShape)
@@ -197,9 +197,9 @@ fun AppNavigationDrawer(
                                 }
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.group_social_icon),
-                                contentDescription = "Group Links Logo",
-                                contentScale = ContentScale.Crop,
+                                painter = painterResource(id = R.drawable.ic_whatsapp_group),
+                                contentDescription = "WhatsApp Group Links Logo",
+                                contentScale = ContentScale.Fit,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape)
