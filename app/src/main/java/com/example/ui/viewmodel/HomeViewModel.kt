@@ -44,6 +44,9 @@ class HomeViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _toastEvent = MutableSharedFlow<String>()
     val toastEvent: SharedFlow<String> = _toastEvent.asSharedFlow()
 
@@ -58,6 +61,16 @@ class HomeViewModel : ViewModel() {
     ) { _, tab, category, query ->
         repository.getFilteredListings(type = tab, category = category, searchQuery = query)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun refreshListings() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            repository.refreshFromNetwork()
+            kotlinx.coroutines.delay(600)
+            _isRefreshing.value = false
+            _toastEvent.emit("Feed refreshed")
+        }
+    }
 
     fun selectTab(type: ListingType) {
         _selectedTab.value = type

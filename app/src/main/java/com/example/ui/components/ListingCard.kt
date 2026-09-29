@@ -83,14 +83,40 @@ fun ListingCard(
                 .fillMaxWidth()
                 .padding(14.dp)
         ) {
+            val avatarColors = remember {
+                listOf(
+                    Color(0xFF00A884), // Emerald
+                    Color(0xFF1E88E5), // Blue
+                    Color(0xFF8E24AA), // Purple
+                    Color(0xFFE53935), // Crimson
+                    Color(0xFFFB8C00), // Orange
+                    Color(0xFF00ACC1), // Cyan
+                    Color(0xFF43A047), // Green
+                    Color(0xFFD81B60), // Magenta
+                    Color(0xFF3949AB)  // Indigo
+                )
+            }
+            val avatarBg = avatarColors[(item.name.hashCode() and 0x7FFFFFFF) % avatarColors.size]
+
             // Circular Group/Channel Image
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(54.dp)
                     .clip(CircleShape)
-                    .background(BorderGray)
+                    .background(avatarBg.copy(alpha = 0.18f))
+                    .border(1.dp, avatarBg.copy(alpha = 0.35f), CircleShape)
             ) {
+                // Initial letter / icon behind image
+                val initial = item.name.firstOrNull { it.isLetterOrDigit() }?.uppercaseChar()?.toString()
+                    ?: if (item.type == ListingType.CHANNEL) "C" else "G"
+                Text(
+                    text = initial,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = avatarBg
+                )
+
                 if (item.imageUrl.isNotBlank()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -102,15 +128,6 @@ fun ListingCard(
                         modifier = Modifier
                             .size(54.dp)
                             .clip(CircleShape)
-                    )
-                } else {
-                    // Fallback avatar with initial letter
-                    val initial = item.name.firstOrNull()?.uppercaseChar()?.toString() ?: "G"
-                    Text(
-                        text = initial,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryGreen
                     )
                 }
             }

@@ -31,12 +31,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,6 +86,7 @@ fun HomeScreen(
     val isSearchOpen by viewModel.isSearchOpen.collectAsState()
     val listings by viewModel.listings.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
 
     var reportDialogListingId by remember { mutableStateOf<String?>(null) }
     var reportReason by remember { mutableStateOf("Spam") }
@@ -182,73 +185,80 @@ fun HomeScreen(
             }
         }
 
-        // Main Feed List
-        if (isLoading) {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(6) {
-                    SkeletonItemCard()
-                }
-            }
-        } else if (listings.isEmpty()) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+        // Main Feed List with Pull-to-Refresh
+        @OptIn(ExperimentalMaterial3Api::class)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshListings() },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (isLoading) {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.SearchOff,
-                        contentDescription = "No results",
-                        tint = SecondaryGray,
-                        modifier = Modifier.size(54.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "No ${selectedTab.name.lowercase()}s found",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DarkText
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = if (searchQuery.isNotEmpty()) "Try a different search keyword" else "Be the first to upload and promote your link!",
-                        fontSize = 13.sp,
-                        color = SecondaryGray
-                    )
-                    Spacer(modifier = Modifier.height(18.dp))
-                    Button(
-                        onClick = onNavigateToUpload,
-                        colors = ButtonDefaults.buttonColors(containerColor = ButtonGreen),
-                        shape = RoundedCornerShape(20.dp)
-                    ) {
-                        Text("Upload Now")
+                    items(6) {
+                        SkeletonItemCard()
                     }
                 }
-            }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(listings, key = { it.id }) { item ->
-                    ListingCard(
-                        item = item,
-                        onJoinOrFollowClick = { viewModel.onJoinOrFollowClicked(item) },
-                        onReportClick = { reportDialogListingId = item.id }
-                    )
+            } else if (listings.isEmpty()) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SearchOff,
+                            contentDescription = "No results",
+                            tint = SecondaryGray,
+                            modifier = Modifier.size(54.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "No ${selectedTab.name.lowercase()}s found",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DarkText
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) "Try a different search keyword" else "Be the first to upload and promote your link!",
+                            fontSize = 13.sp,
+                            color = SecondaryGray
+                        )
+                        Spacer(modifier = Modifier.height(18.dp))
+                        Button(
+                            onClick = onNavigateToUpload,
+                            colors = ButtonDefaults.buttonColors(containerColor = ButtonGreen),
+                            shape = RoundedCornerShape(20.dp)
+                        ) {
+                            Text("Upload Now")
+                        }
+                    }
                 }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(listings, key = { it.id }) { item ->
+                        ListingCard(
+                            item = item,
+                            onJoinOrFollowClick = { viewModel.onJoinOrFollowClicked(item) },
+                            onReportClick = { reportDialogListingId = item.id }
+                        )
+                    }
 
-                // Non-intrusive AdMob banner placement near list bottom
-                item {
-                    AdBannerView(modifier = Modifier.padding(top = 8.dp))
+                    // Non-intrusive AdMob banner placement near list bottom
+                    item {
+                        AdBannerView(modifier = Modifier.padding(top = 8.dp))
+                    }
                 }
             }
         }

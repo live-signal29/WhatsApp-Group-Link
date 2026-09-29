@@ -909,8 +909,33 @@ class ListingRepository(
         }
     }
 
-    // ==========================================
-    // FILTERED & SORTED LISTINGS
+    fun refreshFromNetwork() {
+        val db = firestore ?: return
+        db.collection("listings")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val remoteItems = snapshot.documents.mapNotNull { doc ->
+                        doc.data?.let { ListingItem.fromMap(doc.id, it) }
+                    }
+                    if (remoteItems.isNotEmpty()) {
+                        val remoteIds = remoteItems.map { it.id }.toSet()
+                        val remoteLinks = remoteItems.map {
+                            com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink)
+                        }.toSet()
+                        val preservedBase = baseCatalogListings.filter {
+                            it.id !in remoteIds &&
+                                    com.example.utils.LinkMetadataFetcher.normalizeLinkForDuplicateCheck(it.whatsappLink) !in remoteLinks
+                        }
+                        _listings.value = remoteItems + preservedBase
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.d("ListingRepo", "Manual refresh note: ${e.message}")
+            }
+    }
     // ==========================================
 
     fun getFilteredListings(type: ListingType, category: String? = null, searchQuery: String = ""): List<ListingItem> {
